@@ -1,7 +1,7 @@
 import sys
-import csv
 import local_parser
 import reports
+
 
 def main():
     print("Arguments passed:", sys.argv)
@@ -16,7 +16,8 @@ def main():
     period = sys.argv[3]
     parsed_data = local_parser.parsemanager(period)
     # process the parsed data based on the mode
-    reports.report_manager(mode,parsed_data)
+    reports.report_manager(mode, parsed_data)
+
 
 if __name__ == "__main__":
     main()
