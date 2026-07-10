@@ -1,119 +1,128 @@
 import data_models
 import calendar
+from constants import DEFAULT_VALUE, DATE_PARTS_LIMIT, DATE_MONTH_INDEX, DATE_YEAR_INDEX
 
 
-def parse_float(x):
-    """strips the strings, and returns as float"""
-    x = str(x).strip()
-    if x == "":
-        return None
+def _get_average(values):
+    """Helper function to DRY up average calculations."""
+    return sum(values) / len(values) if values else DEFAULT_VALUE
+
+
+def _get_or_default(value):
+    """Helper function to safely handle missing daily data."""
+    return value if value is not None else DEFAULT_VALUE
+
+
+def _extract_year_and_month(date_str):
+    """SRP Helper: Extracts the year string and month name from a date."""
+    clean_date = date_str.replace("/", "-")
+    parts = clean_date.split("-")
+
+    if len(parts) < DATE_PARTS_LIMIT:
+        return "", "Unknown"
+
+    year_str = parts[DATE_YEAR_INDEX]
     try:
-        return float(x)
+        month_num = int(parts[DATE_MONTH_INDEX])
+        month_name = calendar.month_name[month_num]
     except ValueError:
-        return None
+        month_name = "Unknown"
+
+    return year_str, month_name
 
 
-def calculate_average_monthly(data):
+def calculate_average_monthly(record):
     """calculate the average monthly max/min temperature and mean humidity"""
-    max_temps = []
-    min_temps = []
-    mean_humidities = []
-
-    for row in data:
-        max_temp = parse_float(row.max_temp)
-        if max_temp is not None:
-            max_temps.append(max_temp)
-
-        min_temp = parse_float(row.min_temp)
-        if min_temp is not None:
-            min_temps.append(min_temp)
-
-        mean_humidity = parse_float(row.mean_humidity)
-        if mean_humidity is not None:
-            mean_humidities.append(mean_humidity)
-
-    average_max_temp = sum(max_temps) / len(max_temps) if max_temps else 0.0
-    average_min_temp = sum(min_temps) / len(min_temps) if min_temps else 0.0
-    average_humidity = (
-        sum(mean_humidities) / len(mean_humidities) if mean_humidities else 0.0
-    )
+    max_temps = [
+        row.maximum_temperature for row in record if row.maximum_temperature is not None
+    ]
+    min_temps = [
+        row.minimum_temperature for row in record if row.minimum_temperature is not None
+    ]
+    mean_hums = [row.mean_humidity for row in record if row.mean_humidity is not None]
 
     return data_models.AverageResults(
-        average_max_temp, average_min_temp, average_humidity
+        _get_average(max_temps), _get_average(min_temps), _get_average(mean_hums)
     )
 
 
-def calculate_monthly_report(data):
-    """gets the monthly max temperatures, min temperatures"""
-    highest_temps = []
-    lowest_temps = []
-
-    for row in data:
-        max_temp = parse_float(row.max_temp)
-        min_temp = parse_float(row.min_temp)
-        if max_temp is not None:
-            highest_temps.append(max_temp)
-        if min_temp is not None:
-            lowest_temps.append(min_temp)
+def calculate_monthly_report(record):
+    """gets the monthly min and max temperatures"""
+    highest_temps = [_get_or_default(row.maximum_temperature) for row in record]
+    lowest_temps = [_get_or_default(row.minimum_temperature) for row in record]
 
     return highest_temps, lowest_temps
 
 
-def calculate_chart_data(data):
+def calculate_chart_data(record):
     """Parses data into a ChartResults object for bonus mixed charts."""
     daily_temps = []
     year_str = ""
     month_name = ""
 
-    for row in data:
+    for row in record:
         if not row.date:
             continue
 
-        clean_date = row.date.replace("/", "-")
-        parts = clean_date.split("-")
-
-        if not year_str and len(parts) >= 3:
-            year_str = parts[0]
-            try:
-                month_num = int(parts[1])
-                month_name = calendar.month_name[month_num]
-            except ValueError:
-                month_name = "Unknown"
+        if not year_str:
+            year_str, month_name = _extract_year_and_month(row.date)
 
         try:
-            day = int(parts[-1])
-            max_t = row.max_temp if row.max_temp is not None else 0.0
-            min_t = row.min_temp if row.min_temp is not None else 0.0
+            clean_date = row.date.replace("/", "-")
+            clean_day = int(clean_date.split("-")[-DATE_MONTH_INDEX])
 
-            daily_temps.append(data_models.DailyTemperature(day, max_t, min_t))
+            max_temp = _get_or_default(row.maximum_temperature)
+            min_temp = _get_or_default(row.minimum_temperature)
+
+            daily_temps.append(
+                data_models.DailyTemperature(clean_day, max_temp, min_temp)
+            )
         except (ValueError, IndexError):
             continue
 
     return data_models.ChartResults(month_name, year_str, daily_temps)
 
 
-def calculate_extreme_values(data):
-    """gets the max temperature, min temperature and max humidity"""
+def _evaluate_extreme(current_record, record_date, new_value, new_date, find_max=True):
+    """DRY Helper: Compares and returns the new extreme value and its date."""
+    if new_value is None:
+        return current_record, record_date
 
-    max_temps = []
-    min_temps = []
-    max_humidities = []
+    if current_record is None:
+        return new_value, new_date
 
-    for row in data:
-        max_temp = parse_float(row.max_temp)
-        if max_temp is not None:
-            max_temps.append(max_temp)
+    is_new_record = (
+        (new_value > current_record) if find_max else (new_value < current_record)
+    )
 
-        min_temp = parse_float(row.min_temp)
-        if min_temp is not None:
-            min_temps.append(min_temp)
+    if is_new_record:
+        return new_value, new_date
 
-        max_humidity = parse_float(row.max_humidity)
-        if max_humidity is not None:
-            max_humidities.append(max_humidity)
+    return current_record, record_date
 
-    highest = max(max_temps) if max_temps else None
-    lowest = min(min_temps) if min_temps else None
-    highest_humidity = max(max_humidities) if max_humidities else None
 
-    return data_models.ExtremeResults(highest, lowest, highest_humidity)
+def calculate_extreme_values(record):
+    """Gets the max temperature, min temperature and max humidity with their dates"""
+    highest_temp, highest_date = None, ""
+    lowest_temp, lowest_date = None, ""
+    max_humidity, humidity_date = None, ""
+
+    for row in record:
+        highest_temp, highest_date = _evaluate_extreme(
+            highest_temp, highest_date, row.maximum_temperature, row.date, find_max=True
+        )
+        lowest_temp, lowest_date = _evaluate_extreme(
+            lowest_temp, lowest_date, row.minimum_temperature, row.date, find_max=False
+        )
+        max_humidity, humidity_date = _evaluate_extreme(
+            max_humidity, humidity_date, row.maximum_humidity, row.date, find_max=True
+        )
+
+    return data_models.ExtremeResults(
+        maximum_temperature=highest_temp,
+        maximum_temperature_date=highest_date,
+        minimum_temperature=lowest_temp,
+        minimum_temperature_date=lowest_date,
+        maximum_humidity=max_humidity,
+        maximum_humidity_date=humidity_date,
+    )

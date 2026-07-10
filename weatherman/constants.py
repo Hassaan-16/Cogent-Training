@@ -1,16 +1,29 @@
 """constants to be used throughout weatherman"""
 
-# local_parser.py
+COLUMN_INDEX_DATE = 0
+COLUMN_INDEX_MAX_TEMP = 1
+COLUMN_INDEX_MIN_TEMP = 3
+COLUMN_INDEX_MAX_HUMIDITY = 7
+COLUMN_INDEX_MEAN_HUMIDITY = 9
+
 COLUMNS_TO_READ = [
-    0,
-    1,
-    3,
-    7,
-    9,
-]  # date, max_temp, min_temp, max_humidity, mean_humidity
+    COLUMN_INDEX_DATE,
+    COLUMN_INDEX_MAX_TEMP,
+    COLUMN_INDEX_MIN_TEMP,
+    COLUMN_INDEX_MAX_HUMIDITY,
+    COLUMN_INDEX_MEAN_HUMIDITY,
+]
+
 FILE_NAME_FORMAT = "Murree_weather_{year}_{month}.txt"
 
-# reports.py console chart colors
-RED = "\033[91m"
-BLUE = "\033[94m"
-RESET = "\033[0m"
+DEFAULT_VALUE = 0.0
+DATE_PARTS_LIMIT = 3
+DATE_YEAR_INDEX = 0
+DATE_MONTH_INDEX = 1
+DATE_DAY_INDEX = 2
+
+MINIMUM_VALUE = 0
+
+RED_ASCII = "\033[91m"
+BLUE_ASCII = "\033[94m"
+RESET_ASCII = "\033[0m"

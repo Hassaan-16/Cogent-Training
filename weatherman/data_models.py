@@ -6,9 +6,9 @@ class WeatherReading:
     """data structure for holding each weather reading."""
 
     date: str | None
-    max_temp: float | None
-    min_temp: float | None
-    max_humidity: float | None
+    maximum_temperature: float | None
+    minimum_temperature: float | None
+    maximum_humidity: float | None
     mean_humidity: float | None
 
 
@@ -16,8 +16,8 @@ class WeatherReading:
 class AverageResults:
     """data structure for holding the average calculations results"""
 
-    average_max_temp: float | None
-    average_min_temp: float | None
+    average_maximum_temperature: float | None
+    average_minimum_temperature: float | None
     average_humidity: float | None
 
 
@@ -25,9 +25,12 @@ class AverageResults:
 class ExtremeResults:
     """results for yearly extreme values"""
 
-    max_temp: float | None
-    min_temp: float | None
-    max_humidity: float | None
+    maximum_temperature: float | None
+    maximum_temperature_date: str
+    minimum_temperature: float | None
+    minimum_temperature_date: str
+    maximum_humidity: float | None
+    maximum_humidity_date: str
 
 
 @dataclass
@@ -35,8 +38,8 @@ class DailyTemperature:
     """holds the chart for a single day"""
 
     day: int
-    max_temp: float | None
-    min_temp: float | None
+    maximum_temperature: float | None
+    minimum_temperature: float | None
 
 
 @dataclass
@@ -45,4 +48,4 @@ class ChartResults:
 
     month_name: str
     year: str
-    DailyTemperature: list[DailyTemperature]
+    dailyTemperature: list[DailyTemperature]
