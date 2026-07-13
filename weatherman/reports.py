@@ -1,12 +1,10 @@
 from calculations import (
-    calculate_average_monthly,
+    calculate_average_monthly_report,
     calculate_chart_data,
     calculate_extreme_values,
     calculate_monthly_report,
 )
 from constants import (
-    DATE_MONTH_INDEX,
-    DATE_DAY_INDEX,
     MINIMUM_VALUE,
     RESET_ASCII,
     RED_ASCII,
@@ -15,31 +13,29 @@ from constants import (
 import calendar
 
 
-def _format_date(date_str):
-    """SRP Helper: Translates YYYY-MM-DD into 'Month DD' format."""
-    if not date_str:
-        return ""
-    try:
-        parts = date_str.replace("/", "-").split("-")
-        month = calendar.month_name[int(parts[DATE_MONTH_INDEX])]
-        day = int(parts[DATE_DAY_INDEX])
-        return f"{month} {day:02d}"
-    except (ValueError, IndexError):
-        return date_str
+def format_extreme_value(extreme_value, date_object, unit="C"):
+    """DRY Helper: Formats an extreme value string safely handling None and extracting clean date strings."""
+    if extreme_value is not None and date_object is not None:
+        month_name = calendar.month_name[date_object.month]
+        date_str = f"{month_name} {date_object.day:02d}"
+    
+        return f"{int(round(extreme_value))}{unit} on {date_str}"
+    
+    return "N/A"
 
 
-def generate_average_monthly_report(results):
+def generate_average_monthly_report(average_metrics):
     """Generates the average monthly report from an AverageResults object."""
-    print(f"Highest Average: {int(round(results.average_maximum_temperature))}C")
-    print(f"Lowest Average: {int(round(results.average_minimum_temperature))}C")
-    print(f"Average Mean Humidity: {int(round(results.average_humidity))}%")
+    print(f"Highest Average: {int(round(average_metrics.average_maximum_temperature))}C")
+    print(f"Lowest Average: {int(round(average_metrics.average_minimum_temperature))}C")
+    print(f"Average Mean Humidity: {int(round(average_metrics.average_humidity))}%")
 
 
 def generate_monthly_charts(highest_temp, lowest_temp):
     """Generates console horizontal bar charts for monthly data."""
-    for record in range(len(highest_temp)):
-        day_high_temperature = highest_temp[record]
-        day_low_temperature = lowest_temp[record]
+    for day_index in range(len(highest_temp)):
+        day_high_temperature = highest_temp[day_index]
+        day_low_temperature = lowest_temp[day_index]
 
         if (
             day_high_temperature == MINIMUM_VALUE
@@ -48,80 +44,100 @@ def generate_monthly_charts(highest_temp, lowest_temp):
             continue
 
         high_temperature_bar = (
-            RED_ASCII + ("+" * int(round(day_high_temperature))) + RESET_ASCII
+            RED_ASCII 
+            + ("+" * int(round(day_high_temperature))) 
+            + RESET_ASCII
         )
         low_temperature_bar = (
-            BLUE_ASCII + ("+" * int(round(day_low_temperature))) + RESET_ASCII
+            BLUE_ASCII 
+            + ("+" * int(round(day_low_temperature))) 
+            + RESET_ASCII
         )
 
-        print(f"{record+1:02d} {high_temperature_bar} {day_high_temperature}C")
-        print(f"{record+1:02d} {low_temperature_bar} {day_low_temperature}C")
+        print(f"{day_index+1:02d} {high_temperature_bar} {day_high_temperature}C")
+        print(f"{day_index+1:02d} {low_temperature_bar} {day_low_temperature}C")
 
 
-def generate_bonus_charts(results):
+def generate_bonus_charts(daily_temps):
     """Generates one combined chart for highest and lowest temperatures each day"""
-    if not results.dailyTemperature:
+    if not daily_temps.dailyTemperature:
         print("No daily temperatures found to chart.")
+        
         return
 
-    print(f"{results.month_name} {results.year}")
+    print(f"{daily_temps.month_name} {daily_temps.year}")
 
-    for daily_temperatures in results.dailyTemperature:
+    for daily_temperatures in daily_temps.dailyTemperature:
         if (
             daily_temperatures.maximum_temperature == MINIMUM_VALUE
             and daily_temperatures.minimum_temperature == MINIMUM_VALUE
         ):
             continue
 
-        day = daily_temperatures.day
-        min_temp = int(round(daily_temperatures.minimum_temperature))
-        max_temp = int(round(daily_temperatures.maximum_temperature))
+        day_number = daily_temperatures.day
+        min_temperature = int(round(daily_temperatures.minimum_temperature))
+        max_temperature = int(round(daily_temperatures.maximum_temperature))
 
-        blue_pluses = "+" * max(MINIMUM_VALUE, min_temp)
-        red_pluses = "+" * max(MINIMUM_VALUE, (max_temp - min_temp))
+        blue_pluses = "+" * max(MINIMUM_VALUE, min_temperature)
+        red_pluses = "+" * max(MINIMUM_VALUE, (max_temperature - min_temperature))
 
         combined_bar = BLUE_ASCII + blue_pluses + RED_ASCII + red_pluses + RESET_ASCII
 
-        print(f"{day:02d} {combined_bar} {min_temp}C-{max_temp}C")
+        print(f"{day_number:02d} {combined_bar} {min_temperature}C-{max_temperature}C")
 
 
-def generate_extreme_values_report(results):
+def generate_extreme_values_report(extreme_metrics):
     """generate the extreme values report (year)"""
-    highest_date = _format_date(results.maximum_temperature_date)
-    lowest_date = _format_date(results.minimum_temperature_date)
-    humidity_date = _format_date(results.maximum_humidity_date)
-
-    highest_str = (
-        f"{int(round(results.maximum_temperature))}C on {highest_date}"
-        if results.maximum_temperature is not None
-        else "N/A"
+    highest_str = format_extreme_value(
+        extreme_metrics.maximum_temperature,
+        extreme_metrics.maximum_temperature_date,
+        "C",
     )
-    lowest_str = (
-        f"{int(round(results.minimum_temperature))}C on {lowest_date}"
-        if results.minimum_temperature is not None
-        else "N/A"
+    lowest_str = format_extreme_value(
+        extreme_metrics.minimum_temperature,
+        extreme_metrics.minimum_temperature_date,
+        "C",
     )
-    humidity_str = (
-        f"{int(round(results.maximum_humidity))}% on {humidity_date}"
-        if results.maximum_humidity is not None
-        else "N/A"
+    humidity_str = format_extreme_value(
+        extreme_metrics.maximum_humidity,
+        extreme_metrics.maximum_humidity_date,
+        "%",
     )
 
-    print(f"Highest: {highest_str}")
-    print(f"Lowest: {lowest_str}")
-    print(f"Humidity: {humidity_str}")
-
-
-def report_manager(mode, data):
-    """Selects and executes the appropriate report generation based on the mode."""
-    dispatch = {
-        "-a": lambda d: generate_average_monthly_report(calculate_average_monthly(d)),
-        "-c": lambda d: generate_monthly_charts(*calculate_monthly_report(d)),
-        "-b": lambda d: generate_bonus_charts(calculate_chart_data(d)),
-        "-e": lambda d: generate_extreme_values_report(calculate_extreme_values(d)),
+    return {
+        "Highest": highest_str,
+        "Lowest": lowest_str,
+        "Humidity": humidity_str,
     }
 
-    if mode in dispatch:
-        dispatch[mode](data)
+
+def print_extreme_values_report(report_dict):
+    for label, text in report_dict.items():
+        print(f"{label}: {text}")
+
+
+def report_manager(report_type, parsed_readings):
+    """Selects and executes the appropriate report generation based on the mode."""
+    dispatch = {
+        "-a": lambda weather_readings: 
+        generate_average_monthly_report(
+            calculate_average_monthly_report(weather_readings)
+            ),
+        "-c": lambda weather_readings: 
+        generate_monthly_charts(
+            *calculate_monthly_report(weather_readings)
+            ),
+        "-b": lambda weather_readings: 
+        generate_bonus_charts(
+            calculate_chart_data(weather_readings)
+            ),
+        "-e": lambda weather_readings: 
+        generate_extreme_values_report(
+            calculate_extreme_values(weather_readings)
+            ),
+    }
+
+    if report_type in dispatch:
+        dispatch[report_type](parsed_readings)
     else:
         print("Invalid mode. Please use -a, -c, -e, or -b.")

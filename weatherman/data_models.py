@@ -1,11 +1,12 @@
 from dataclasses import dataclass
+from datetime import date
 
 
 @dataclass
 class WeatherReading:
     """data structure for holding each weather reading."""
-
-    date: str | None
+    
+    date: date | None
     maximum_temperature: float | None
     minimum_temperature: float | None
     maximum_humidity: float | None
@@ -15,7 +16,7 @@ class WeatherReading:
 @dataclass
 class AverageResults:
     """data structure for holding the average calculations results"""
-
+    
     average_maximum_temperature: float | None
     average_minimum_temperature: float | None
     average_humidity: float | None
@@ -24,19 +25,19 @@ class AverageResults:
 @dataclass
 class ExtremeResults:
     """results for yearly extreme values"""
-
+    
     maximum_temperature: float | None
-    maximum_temperature_date: str
+    maximum_temperature_date: date | None
     minimum_temperature: float | None
-    minimum_temperature_date: str
+    minimum_temperature_date: date | None
     maximum_humidity: float | None
-    maximum_humidity_date: str
+    maximum_humidity_date: date | None
 
 
 @dataclass
 class DailyTemperature:
     """holds the chart for a single day"""
-
+    
     day: int
     maximum_temperature: float | None
     minimum_temperature: float | None
@@ -49,3 +50,4 @@ class ChartResults:
     month_name: str
     year: str
     dailyTemperature: list[DailyTemperature]
+    
