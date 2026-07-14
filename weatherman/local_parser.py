@@ -12,7 +12,9 @@ from constants import (
     COLUMN_KEY_MEAN_HUMIDITY,
     DATE_YEAR_INDEX,
     DATE_MONTH_INDEX,
-    DATE_DAY_INDEX
+    DATE_DAY_INDEX,
+    MONTH_FIRST_INDEX,
+    MONTH_LAST_INDEX
 )
 
 
@@ -37,11 +39,11 @@ def safe_date(date_str):
         return None
     
 
-def _extract_raw_rows(filepath):
+def _extract_raw_rows(filename):
     """Handles File I/O: Reads a CSV file using DictReader and returns the valid raw rows."""
     raw_rows = []
     try:
-        with open(filepath, "r", encoding="utf-8") as csvfile:
+        with open(filename, "r", encoding="utf-8") as csvfile:
             csv_reader = csv.DictReader(csvfile)
 
             for row in csv_reader:
@@ -49,7 +51,7 @@ def _extract_raw_rows(filepath):
                     raw_rows.append(row)
 
     except OSError as error:
-        print(f"Error reading file: {filepath}\nException: {error}")
+        print(f"Error reading file: {filename}\nException: {error}")
 
     return raw_rows
 
@@ -90,20 +92,25 @@ def _generate_file_pattern(target_period, directory_path):
             directory_path, f"Murree_weather_{target_year}_*.txt"
         )
     else:
+
         try:
             month_num = int(date_parts[DATE_MONTH_INDEX])
+            
+            if not MONTH_FIRST_INDEX <= month_num <= MONTH_LAST_INDEX:
+                print(f"Error: Invalid month '{month_num}'. Please use a value between 1 and 12.")
+                return None
+                
             month_abbr = calendar.month_abbr[month_num]
             file_pattern = os.path.join(
                 directory_path, 
                 f"Murree_weather_{target_year}_{month_abbr}.txt"
             )
-        except (ValueError, IndexError):
-            file_pattern = os.path.join(
-                directory_path, f"Murree_weather_{target_year}_*.txt"
-            )
+            
+        except ValueError:
+            print(f"Error: Invalid month format in '{target_period}'.")
+            return None
 
     return file_pattern
-
 
 def parse_manager(target_period, directory_path):
     """Schedules file parsing by locating files that match the requested period."""
@@ -113,6 +120,9 @@ def parse_manager(target_period, directory_path):
         target_period, 
         directory_path
     )
+    if file_pattern is None:
+        return []
+    
     matching_files = glob.glob(file_pattern)
 
     if not matching_files:

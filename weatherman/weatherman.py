@@ -26,7 +26,8 @@ def main():
             parsed_readings = parse_manager(
                 target_period, command_line_arguments.filepath
             )
-            report_manager(command_line_flag, parsed_readings)
+            if parsed_readings:
+                report_manager(command_line_flag, parsed_readings)
 
 
 if __name__ == "__main__":

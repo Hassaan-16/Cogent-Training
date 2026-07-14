@@ -132,9 +132,10 @@ def report_manager(report_type, parsed_readings):
             calculate_chart_data(weather_readings)
             ),
         "-e": lambda weather_readings: 
-        generate_extreme_values_report(
-            calculate_extreme_values(weather_readings)
-            ),
+        print_extreme_values_report(
+            generate_extreme_values_report(
+                calculate_extreme_values(weather_readings)),
+            )
     }
 
     if report_type in dispatch:
