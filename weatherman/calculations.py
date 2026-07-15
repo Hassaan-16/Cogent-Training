@@ -1,17 +1,25 @@
-import data_models
 import calendar
-from constants import DEFAULT_VALUE
+
+import data_models
+from constants import (
+    DEFAULT_VALUE,
+    DATE_YEAR_INDEX,
+    MAX_TEMP,
+    MIN_TEMP,
+    MEAN_HUMIDITY,
+    MAX_HUMIDITY,
+)
 
 
 class WeatherCalculator:
-    """Encapsulates weather data calculations."""
+    """Encapsulates the weather data calculations."""
 
     def __init__(self, weather_readings):
         self.weather_readings = weather_readings
 
     @staticmethod
     def calculate_weather_readings_average(weather_reading_value):
-        """function to calculate averages"""
+        """function to calculate averages."""
 
         return (
             sum(weather_reading_value) / len(weather_reading_value)
@@ -19,14 +27,8 @@ class WeatherCalculator:
             else DEFAULT_VALUE
         )
 
-    @staticmethod
-    def _handle_missing_values(weather_value):
-        """safely handle missing daily data values."""
-
-        return weather_value if weather_value is not None else DEFAULT_VALUE
-
-    def _extract_valid_attributes(self, attribute_name):
-        """Extracts non-None attributes from the internal readings."""
+    def _extract_required_attribute(self, attribute_name):
+        """Extracts the required attributes from the internal readings."""
 
         return [
             getattr(weather_reading, attribute_name)
@@ -35,27 +37,23 @@ class WeatherCalculator:
         ]
 
     def calculate_average_monthly_report(self):
-        """calculate the average monthly max/min temperature and mean humidity"""
-        weather_attributes = [
-            ("maximum_temperature", "maximum_temperature_average"),
-            ("minimum_temperature", "minimum_temperature_average"),
-            ("mean_humidity", "mean_humidity_average"),
-        ]
+        """calculate average monthly max/min temperature and mean humidity."""
+        weather_attributes = [MAX_TEMP, MIN_TEMP, MEAN_HUMIDITY]
 
         extracted_weather_attributes = {
-            attribute_name: self._extract_valid_attributes(attribute_name)
-            for attribute_name, _ in weather_attributes
+            attribute_name: self._extract_required_attribute(attribute_name)
+            for attribute_name in weather_attributes
         }
 
         return data_models.AverageResults(
             self.calculate_weather_readings_average(
-                extracted_weather_attributes["maximum_temperature"]
+                extracted_weather_attributes[MAX_TEMP]
             ),
             self.calculate_weather_readings_average(
-                extracted_weather_attributes["minimum_temperature"]
+                extracted_weather_attributes[MIN_TEMP]
             ),
             self.calculate_weather_readings_average(
-                extracted_weather_attributes["mean_humidity"]
+                extracted_weather_attributes[MEAN_HUMIDITY]
             ),
         )
 
@@ -63,52 +61,55 @@ class WeatherCalculator:
         """gets the monthly min and max temperature data"""
         highest_temps = []
         lowest_temps = []
-
         year_str = ""
         month_name = "N/A"
 
         for weather_reading in self.weather_readings:
-            highest_temps.append(
-                self._handle_missing_values(weather_reading.maximum_temperature)
+            highest_temps.append(weather_reading.maximum_temperature)
+            lowest_temps.append(weather_reading.minimum_temperature)
+
+        if self.weather_readings and self.weather_readings[DATE_YEAR_INDEX].date:
+            first_valid_date = next(
+                (r.date for r in self.weather_readings if r.date), None
             )
-            lowest_temps.append(
-                self._handle_missing_values(weather_reading.minimum_temperature)
-            )
-        if weather_reading.date and not year_str:
-            year_str = str(weather_reading.date.year)
-            month_name = calendar.month_name[weather_reading.date.month]
+
+            if first_valid_date:
+                year_str = str(first_valid_date.year)
+                month_name = calendar.month_name[first_valid_date.month]
+
         return month_name, year_str, highest_temps, lowest_temps
 
-    def _build_daily_temperatures(self):
-        """Build DailyTemperature DTOs, skipping invalid readings."""
+    @staticmethod
+    def _map_to_daily_temperatures(weather_readings):
+        """maps DailyTemperature day, max and min temperatures to data model"""
         daily_temps = []
-        for weather_reading in self.weather_readings:
-            if not weather_reading:
+
+        for weather_reading in weather_readings:
+            if not weather_reading or weather_reading.date is None:
                 continue
 
             day_int = weather_reading.date.day
-            max_temp = self._handle_missing_values(
-                getattr(weather_reading, "maximum_temperature", None)
-            )
-            min_temp = self._handle_missing_values(
-                getattr(weather_reading, "minimum_temperature", None)
-            )
-
             daily_temps.append(
-                data_models.DailyTemperature(day_int, max_temp, min_temp)
+                data_models.DailyTemperature(
+                    day_int,
+                    weather_reading.maximum_temperature,
+                    weather_reading.minimum_temperature,
+                )
             )
 
         return daily_temps
 
     def calculate_chart_data(self):
         """Parses data into a ChartResults object for bonus mixed charts."""
-        daily_temps = self._build_daily_temperatures()
+        daily_temps = self._map_to_daily_temperatures(self.weather_readings)
 
         year_str, month_name = "", "Unknown"
+
         for reading in self.weather_readings:
             if reading.date:
                 year_str = str(reading.date.year)
                 month_name = calendar.month_name[reading.date.month]
+                break
 
         return data_models.ChartResults(month_name, year_str, daily_temps)
 
@@ -130,6 +131,7 @@ class WeatherCalculator:
                 if find_max
                 else (new_extreme_value < current_extreme_value)
             )
+
             if is_new_record:
                 result_extreme = new_extreme_value
                 result_date = new_extreme_date
@@ -140,12 +142,12 @@ class WeatherCalculator:
         """Iterates through readings to find the extreme of a single attribute."""
         extreme_val, extreme_date = None, None
 
-        for reading in self.weather_readings:
+        for weather_reading in self.weather_readings:
             extreme_val, extreme_date = self._evaluate_extreme(
                 extreme_val,
                 extreme_date,
-                getattr(reading, attribute_name, None),
-                reading.date,
+                getattr(weather_reading, attribute_name, None),
+                weather_reading.date,
                 find_max,
             )
 
@@ -153,21 +155,16 @@ class WeatherCalculator:
 
     def calculate_extreme_values(self):
         """Gets the max temperature, min temperature and max humidity with their dates"""
-        highest_temp, highest_date = self._find_extreme_for_attribute(
-            "maximum_temperature", find_max=True
-        )
-        lowest_temp, lowest_date = self._find_extreme_for_attribute(
-            "minimum_temperature", find_max=False
-        )
-        max_humidity, humidity_date = self._find_extreme_for_attribute(
-            "maximum_humidity", find_max=True
-        )
+        target_attributes = {MAX_TEMP: True, MIN_TEMP: False, MAX_HUMIDITY: True}
 
-        return data_models.ExtremeResults(
-            maximum_temperature=highest_temp,
-            maximum_temperature_date=highest_date,
-            minimum_temperature=lowest_temp,
-            minimum_temperature_date=lowest_date,
-            maximum_humidity=max_humidity,
-            maximum_humidity_date=humidity_date,
-        )
+        extreme_value_attributes = {}
+
+        for weather_attribute, find_max in target_attributes.items():
+            extreme_val, extreme_date = self._find_extreme_for_attribute(
+                weather_attribute, find_max
+            )
+
+            extreme_value_attributes[weather_attribute] = extreme_val
+            extreme_value_attributes[f"{weather_attribute}_date"] = extreme_date
+
+        return data_models.ExtremeResults(**extreme_value_attributes)

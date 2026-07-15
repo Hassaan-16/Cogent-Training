@@ -1,0 +1,101 @@
+import calendar
+
+from constants import (
+    MINIMUM_VALUE,
+    RESET_ASCII,
+    RED_ASCII,
+    BLUE_ASCII,
+    DATE_MONTH_INDEX,
+    DATE_DAY_INDEX,
+)
+
+
+def format_temp_int(temperature_in_degrees):
+    """Standardizes temperature rounding and formatting as integers. safely handles None."""
+    if temperature_in_degrees is None:
+        return "N/A"
+
+    return int(round(temperature_in_degrees))
+
+
+def format_extreme_value(extreme_weather_reading, date_object, unit="C"):
+    """Formats an extreme value string safely handling None and extracting clean date strings."""
+    if None not in [extreme_weather_reading, date_object]:
+        if isinstance(date_object, str):
+            clean_date = date_object.replace("/", "-")
+            parts = clean_date.split("-")
+            month_num = int(parts[DATE_MONTH_INDEX])
+            day_num = int(parts[DATE_DAY_INDEX])
+        else:
+            month_num = date_object.month
+            day_num = date_object.day
+
+        month_name = calendar.month_name[month_num]
+        date_str = f"{month_name} {day_num:02d}"
+
+        formatted_temp = format_temp_int(extreme_weather_reading)
+        formatted_extreme_value_str = f"{formatted_temp}{unit} on {date_str}"
+
+    else:
+        formatted_extreme_value_str = "N/A"
+
+    return formatted_extreme_value_str
+
+
+def build_color_bar(temperature_in_degrees, ascii_color_code):
+    """Builds a single colored ASCII bar based on ASCII code."""
+    if temperature_in_degrees < MINIMUM_VALUE:
+        temperature_in_degrees = MINIMUM_VALUE
+
+    return f"{ascii_color_code}{'+' * temperature_in_degrees}{RESET_ASCII}"
+
+
+def create_monthly_chart_lines(month_name, year_str, highest_temps, lowest_temps):
+    """Builds formatted string lines for the monthly chart report."""
+    lines = [f"{month_name} {year_str}"]
+
+    for day_index in range(len(highest_temps)):
+        day_high = highest_temps[day_index]
+        day_low = lowest_temps[day_index]
+
+        if day_high is None or day_low is None:
+            continue
+
+        formatted_high = format_temp_int(day_high)
+        formatted_low = format_temp_int(day_low)
+
+        high_bar = build_color_bar(formatted_high, RED_ASCII)
+        low_bar = build_color_bar(formatted_low, BLUE_ASCII)
+
+        lines.append(f"{day_index + 1:02d} {high_bar} {day_high}C")
+        lines.append(f"{day_index + 1:02d} {low_bar} {day_low}C")
+
+    return lines
+
+
+def create_bonus_chart_lines(daily_temps):
+    """Builds formatted string lines for the combined bonus chart."""
+    if not daily_temps.dailyTemperature:
+        return ["No daily temperatures found to chart."]
+
+    lines = [f"{daily_temps.month_name} {daily_temps.year}"]
+
+    for daily in daily_temps.dailyTemperature:
+        if daily.maximum_temperature is None or daily.minimum_temperature is None:
+            continue
+
+        day_num = daily.day
+        min_temp = format_temp_int(daily.minimum_temperature)
+        max_temp = format_temp_int(daily.maximum_temperature)
+
+        safe_min = max(MINIMUM_VALUE, min_temp)
+        safe_max = max(MINIMUM_VALUE, max_temp)
+
+        blue_bar = build_color_bar(safe_min, BLUE_ASCII)
+        red_bar = build_color_bar(safe_max - safe_min, RED_ASCII)
+
+        combined_bar = blue_bar.replace(RESET_ASCII, "") + red_bar
+
+        lines.append(f"{day_num:02d} {combined_bar} {min_temp}C-{max_temp}C")
+
+    return lines

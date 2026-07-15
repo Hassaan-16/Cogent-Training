@@ -1,5 +1,10 @@
 """constants to be used throughout weatherman"""
 
+MAX_TEMP = "maximum_temperature"
+MIN_TEMP = "minimum_temperature"
+MAX_HUMIDITY = "maximum_humidity"
+MEAN_HUMIDITY = "mean_humidity"
+
 COLUMN_KEY_DATE = "PKT"
 COLUMN_KEY_MAX_TEMP = "Max TemperatureC"
 COLUMN_KEY_MIN_TEMP = "Min TemperatureC"

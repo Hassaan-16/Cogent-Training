@@ -1,7 +1,8 @@
 from argparse import ArgumentParser
-from weather_parser import WeatherParser
-from calculations import WeatherCalculator
+
 from reports import ReportGenerator
+from calculations import WeatherCalculator
+from weather_parser import WeatherParser
 
 
 def main():
