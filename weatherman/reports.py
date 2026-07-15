@@ -14,8 +14,8 @@ class ReportGenerator:
         self.calculator = calculator
 
     @staticmethod
-    def _format_temp(temperature_in_degrees):
-        """Standardizes temperature rounding and formatting."""
+    def _format_temp_int(temperature_in_degrees):
+        """Standardizes temperature rounding and formatting as integers"""
 
         return int(round(temperature_in_degrees))
 
@@ -28,14 +28,13 @@ class ReportGenerator:
         return f"{ascii_color_code}{'+' * temperature_in_degrees}{RESET_ASCII}"
 
     @staticmethod
-    def _format_extreme_value(extreme_weather_reading, date_object, unit="C"):
+    def _format_extreme_value(self, extreme_weather_reading, date_object, unit="C"):
         """Formats an extreme value string safely handling None and extracting clean date strings."""
         if extreme_weather_reading is not None and date_object is not None:
             month_name = calendar.month_name[date_object.month]
             date_str = f"{month_name} {date_object.day:02d}"
-            formatted_extreme_value_str = (
-                f"{int(round(extreme_weather_reading))}{unit} on {date_str}"
-            )
+            formatted_temp = self._format_temp_int(extreme_weather_reading)
+            formatted_extreme_value_str = f"{formatted_temp}{unit} on {date_str}"
         else:
             formatted_extreme_value_str = "N/A"
 
@@ -46,18 +45,28 @@ class ReportGenerator:
         average_metrics = self.calculator.calculate_average_monthly_report()
 
         print(
-            f"Highest Average: {self._format_temp(average_metrics.average_maximum_temperature)}C"
+            f"Highest Average: {
+                self._format_temp_int(average_metrics.average_maximum_temperature)
+            }C"
         )
         print(
-            f"Lowest Average: {self._format_temp(average_metrics.average_minimum_temperature)}C"
+            f"Lowest Average: {
+                self._format_temp_int(average_metrics.average_minimum_temperature)
+            }C"
         )
         print(
-            f"Average Mean Humidity: {self._format_temp(average_metrics.average_humidity)}%"
+            f"Average Mean Humidity: {
+                self._format_temp_int(average_metrics.average_humidity)
+            }%"
         )
 
     def generate_monthly_charts(self):
         """Generates console horizontal bar charts for monthly data."""
-        highest_temp, lowest_temp = self.calculator.calculate_monthly_report()
+        month_name, year_str, highest_temp, lowest_temp = (
+            self.calculator.calculate_monthly_report()
+        )
+
+        print(f"{month_name} {year_str}")
 
         for day_index in range(len(highest_temp)):
             day_high_temperature = highest_temp[day_index]
@@ -69,8 +78,8 @@ class ReportGenerator:
             ):
                 continue
 
-            formatted_high = self._format_temp(day_high_temperature)
-            formatted_low = self._format_temp(day_low_temperature)
+            formatted_high = self._format_temp_int(day_high_temperature)
+            formatted_low = self._format_temp_int(day_low_temperature)
 
             high_temperature_bar = self._build_color_bar(formatted_high, RED_ASCII)
             low_temperature_bar = self._build_color_bar(formatted_low, BLUE_ASCII)
@@ -97,8 +106,12 @@ class ReportGenerator:
                 continue
 
             day_number = daily_temperatures.day
-            min_temperature = self._format_temp(daily_temperatures.minimum_temperature)
-            max_temperature = self._format_temp(daily_temperatures.maximum_temperature)
+            min_temperature = self._format_temp_int(
+                daily_temperatures.minimum_temperature
+            )
+            max_temperature = self._format_temp_int(
+                daily_temperatures.maximum_temperature
+            )
 
             safe_min_temp = max(MINIMUM_VALUE, min_temperature)
             safe_max_temp = max(MINIMUM_VALUE, max_temperature)
@@ -158,5 +171,6 @@ class ReportGenerator:
 
         if report_type in dispatch:
             dispatch[report_type]()
+            print(" ")
         else:
             print("Invalid mode. Please use -a, -c, -e, or -b.")

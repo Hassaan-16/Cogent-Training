@@ -10,8 +10,8 @@ class WeatherCalculator:
         self.weather_readings = weather_readings
 
     @staticmethod
-    def _weather_readings_average(weather_reading_value):
-        """Helper function for average calculations."""
+    def calculate_weather_readings_average(weather_reading_value):
+        """function to calculate averages"""
 
         return (
             sum(weather_reading_value) / len(weather_reading_value)
@@ -20,13 +20,13 @@ class WeatherCalculator:
         )
 
     @staticmethod
-    def _safe_weather_value(weather_value):
-        """Helper function to safely handle missing daily data values."""
+    def _handle_missing_values(weather_value):
+        """safely handle missing daily data values."""
 
         return weather_value if weather_value is not None else DEFAULT_VALUE
 
     def _extract_valid_attributes(self, attribute_name):
-        """DRY Helper: Extracts non-None attributes from the internal readings."""
+        """Extracts non-None attributes from the internal readings."""
 
         return [
             getattr(weather_reading, attribute_name)
@@ -36,7 +36,7 @@ class WeatherCalculator:
 
     def calculate_average_monthly_report(self):
         """calculate the average monthly max/min temperature and mean humidity"""
-        metrics = [
+        weather_attributes = [
             ("maximum_temperature", "maximum_temperature_average"),
             ("minimum_temperature", "minimum_temperature_average"),
             ("mean_humidity", "mean_humidity_average"),
@@ -44,35 +44,40 @@ class WeatherCalculator:
 
         extracted_weather_attributes = {
             attribute_name: self._extract_valid_attributes(attribute_name)
-            for attribute_name, _ in metrics
+            for attribute_name, _ in weather_attributes
         }
 
         return data_models.AverageResults(
-            self._weather_readings_average(
+            self.calculate_weather_readings_average(
                 extracted_weather_attributes["maximum_temperature"]
             ),
-            self._weather_readings_average(
+            self.calculate_weather_readings_average(
                 extracted_weather_attributes["minimum_temperature"]
             ),
-            self._weather_readings_average(
+            self.calculate_weather_readings_average(
                 extracted_weather_attributes["mean_humidity"]
             ),
         )
 
     def calculate_monthly_report(self):
-        """gets the monthly min and max temperatures"""
+        """gets the monthly min and max temperature data"""
         highest_temps = []
         lowest_temps = []
 
+        year_str = ""
+        month_name = "N/A"
+
         for weather_reading in self.weather_readings:
             highest_temps.append(
-                self._safe_weather_value(weather_reading.maximum_temperature)
+                self._handle_missing_values(weather_reading.maximum_temperature)
             )
             lowest_temps.append(
-                self._safe_weather_value(weather_reading.minimum_temperature)
+                self._handle_missing_values(weather_reading.minimum_temperature)
             )
-
-        return highest_temps, lowest_temps
+        if weather_reading.date and not year_str:
+            year_str = str(weather_reading.date.year)
+            month_name = calendar.month_name[weather_reading.date.month]
+        return month_name, year_str, highest_temps, lowest_temps
 
     def _build_daily_temperatures(self):
         """Build DailyTemperature DTOs, skipping invalid readings."""
@@ -82,10 +87,10 @@ class WeatherCalculator:
                 continue
 
             day_int = weather_reading.date.day
-            max_temp = self._safe_weather_value(
+            max_temp = self._handle_missing_values(
                 getattr(weather_reading, "maximum_temperature", None)
             )
-            min_temp = self._safe_weather_value(
+            min_temp = self._handle_missing_values(
                 getattr(weather_reading, "minimum_temperature", None)
             )
 
@@ -115,7 +120,7 @@ class WeatherCalculator:
         new_extreme_date,
         find_max=True,
     ):
-        """DRY Helper: Compares and returns the new extreme value and its date."""
+        """Compares and returns the new extreme value and its date."""
         result_extreme = current_extreme_value
         result_date = current_record_date
 
@@ -132,7 +137,7 @@ class WeatherCalculator:
         return result_extreme, result_date
 
     def _find_extreme_for_attribute(self, attribute_name, find_max=True):
-        """SRP Helper: Iterates through readings to find the extreme of a single attribute."""
+        """Iterates through readings to find the extreme of a single attribute."""
         extreme_val, extreme_date = None, None
 
         for reading in self.weather_readings:
