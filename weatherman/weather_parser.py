@@ -40,7 +40,7 @@ class WeatherParser:
 
         return raw_weather_rows
 
-    def _build_weather_readings(self, raw_weather_rows):
+    def store_weather_readings(self, raw_weather_rows):
         """Converts raw CSV dict rows into cleanly validated WeatherReading objects."""
         parsed_readings = []
 
@@ -73,7 +73,7 @@ class WeatherParser:
         """Coordinates parsing a single weather file into WeatherReading objects."""
         raw_weather_rows = self._extract_raw_rows(filepath)
 
-        return self._build_weather_readings(raw_weather_rows)
+        return self.store_weather_readings(raw_weather_rows)
 
     def parse_period(self, target_period):
         """Schedules file parsing by locating files that match requested period."""

@@ -18,7 +18,7 @@ def handle_missing_values(weather_value):
 
 
 def validate_date(date_str):
-    """Exclusively parses and validates dates at the boundaries."""
+    """parses and validates dates."""
     parsed_date = None
     if date_str:
         try:
