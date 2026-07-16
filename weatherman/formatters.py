@@ -49,8 +49,7 @@ def format_extreme_value(extreme_weather_reading, date_object, unit="C"):
 
 def build_color_bar(temperature_in_degrees, ascii_color_code):
     """Builds a single colored ASCII bar based on ASCII code."""
-    if temperature_in_degrees < MINIMUM_VALUE:
-        temperature_in_degrees = MINIMUM_VALUE
+    temperature_in_degrees = max(temperature_in_degrees, MINIMUM_VALUE)
 
     return f"{ascii_color_code}{'+' * temperature_in_degrees}{RESET_ASCII}"
 
