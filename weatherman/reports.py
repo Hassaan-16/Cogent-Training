@@ -15,10 +15,10 @@ class ReportGenerator:
     def generate_average_monthly_report(self):
         """Generates and prints the average monthly report."""
         average_metrics = self.calculator.calculate_average_monthly_report()
-        formatted_lines = get_average_monthly_lines(average_metrics)
+        formatted_average_monthly_lines = get_average_monthly_lines(average_metrics)
 
-        for line in formatted_lines:
-            print(line)
+        for average_report_values in formatted_average_monthly_lines:
+            print(average_report_values)
 
     def generate_monthly_charts(self):
         """Displays horizontal bar charts for monthly data."""
@@ -26,28 +26,28 @@ class ReportGenerator:
             self.calculator.calculate_monthly_report()
         )
 
-        formatted_chart_lines = get_monthly_chart_lines(
+        formatted_monthly_chart_lines = get_monthly_chart_lines(
             month_name, year_str, highest_temp, lowest_temp
         )
 
-        for line in formatted_chart_lines:
-            print(line)
+        for monthly_chart_line in formatted_monthly_chart_lines:
+            print(monthly_chart_line)
 
     def generate_bonus_charts(self):
         """Displays one combined daily chart."""
         daily_temps = self.calculator.calculate_chart_data()
-        formatted_chart_lines = get_bonus_chart_lines(daily_temps)
+        formatted_bonus_chart_lines = get_bonus_chart_lines(daily_temps)
 
-        for line in formatted_chart_lines:
-            print(line)
+        for bonus_chart_line in formatted_bonus_chart_lines:
+            print(bonus_chart_line)
 
     def generate_extreme_values_report(self):
         """Generates and prints the extreme values report."""
         extreme_metrics = self.calculator.calculate_extreme_values()
-        formatted_lines = get_extreme_values_lines(extreme_metrics)
+        formatted_extreme_values_lines = get_extreme_values_lines(extreme_metrics)
 
-        for line in formatted_lines:
-            print(line)
+        for extreme_values in formatted_extreme_values_lines:
+            print(extreme_values)
 
     def execute_report(self, report_type):
         """Selects and executes the appropriate report generation based on the mode."""

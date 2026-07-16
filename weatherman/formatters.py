@@ -16,7 +16,7 @@ from constants import (
 
 
 def format_temp_int(temperature_in_degrees):
-    """Standardizes temperature rounding and formatting as integers. safely handles None."""
+    """temperature rounding as integers. None values returned as N/A."""
     if temperature_in_degrees is None:
         return "N/A"
 
@@ -55,8 +55,8 @@ def build_color_bar(temperature_in_degrees, ascii_color_code):
 
 
 def get_monthly_chart_lines(month_name, year_str, highest_temps, lowest_temps):
-    """Builds formatted string lines for the monthly chart report."""
-    lines = [f"{month_name} {year_str}"]
+    """Creates formatted string lines for the monthly chart report."""
+    monthly_chart_lines = [f"{month_name} {year_str}"]
 
     for day_index in range(len(highest_temps)):
         day_high = highest_temps[day_index]
@@ -68,21 +68,21 @@ def get_monthly_chart_lines(month_name, year_str, highest_temps, lowest_temps):
         formatted_high = format_temp_int(day_high)
         formatted_low = format_temp_int(day_low)
 
-        high_bar = build_color_bar(formatted_high, RED_ASCII)
-        low_bar = build_color_bar(formatted_low, BLUE_ASCII)
+        high_temp_bar = build_color_bar(formatted_high, RED_ASCII)
+        low_temp_bar = build_color_bar(formatted_low, BLUE_ASCII)
 
-        lines.append(f"{day_index + 1:02d} {high_bar} {day_high}C")
-        lines.append(f"{day_index + 1:02d} {low_bar} {day_low}C")
+        monthly_chart_lines.append(f"{day_index + 1:02d} {high_temp_bar} {day_high}C")
+        monthly_chart_lines.append(f"{day_index + 1:02d} {low_temp_bar} {day_low}C")
 
-    return lines
+    return monthly_chart_lines
 
 
 def get_bonus_chart_lines(daily_temps):
-    """Builds formatted string lines for the combined bonus chart."""
+    """Creates formatted string lines for the combined bonus chart."""
     if not daily_temps.dailyTemperature:
         return ["No daily temperatures found to chart."]
 
-    lines = [f"{daily_temps.month_name} {daily_temps.year}"]
+    bonus_chart_lines = [f"{daily_temps.month_name} {daily_temps.year}"]
 
     for daily in daily_temps.dailyTemperature:
         if daily.maximum_temperature is None or daily.minimum_temperature is None:
@@ -97,24 +97,26 @@ def get_bonus_chart_lines(daily_temps):
 
         combined_bar = blue_bar.replace(RESET_ASCII, "") + red_bar
 
-        lines.append(f"{day_num:02d} {combined_bar} {min_temp}C-{max_temp}C")
+        bonus_chart_lines.append(
+            f"{day_num:02d} {combined_bar} {min_temp}C-{max_temp}C"
+        )
 
-    return lines
+    return bonus_chart_lines
 
 
 def get_average_monthly_lines(average_metrics):
     """Builds formatted string lines for the average monthly report."""
-    high_avg = format_temp_int(average_metrics.average_maximum_temperature)
-    low_avg = format_temp_int(average_metrics.average_minimum_temperature)
+    high_temp_avg = format_temp_int(average_metrics.average_maximum_temperature)
+    low_temp_avg = format_temp_int(average_metrics.average_minimum_temperature)
     humidity_avg = format_temp_int(average_metrics.average_humidity)
 
-    lines = [
-        f"Highest Average: {high_avg}C",
-        f"Lowest Average: {low_avg}C",
+    average_monthly_lines = [
+        f"Highest Average: {high_temp_avg}C",
+        f"Lowest Average: {low_temp_avg}C",
         f"Average Mean Humidity: {humidity_avg}%",
     ]
 
-    return lines
+    return average_monthly_lines
 
 
 def get_extreme_values_lines(extreme_metrics):
@@ -140,9 +142,9 @@ def get_extreme_values_lines(extreme_metrics):
         ),
     ]
 
-    lines = [
-        f"{label}: {format_extreme_value(val, date_obj, unit)}"
-        for label, val, date_obj, unit in report_configs
+    extreme_values = [
+        f"{extreme_value_label}: {format_extreme_value(val, date_obj, unit)}"
+        for extreme_value_label, val, date_obj, unit in report_configs
     ]
 
-    return lines
+    return extreme_values
