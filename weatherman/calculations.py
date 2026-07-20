@@ -2,12 +2,14 @@ import calendar
 
 import data_models
 from constants import (
-    DEFAULT_VALUE,
     DATE_YEAR_INDEX,
-    MAX_TEMP,
-    MIN_TEMP,
-    MEAN_HUMIDITY,
+    DEFAULT_VALUE,
     MAX_HUMIDITY,
+    MAX_TEMP,
+    MEAN_HUMIDITY,
+    MIN_TEMP,
+    NOT_APPLICABLE,
+    UNKNOWN,
 )
 
 
@@ -62,7 +64,7 @@ class WeatherCalculator:
         highest_temps = []
         lowest_temps = []
         year_str = ""
-        month_name = "N/A"
+        month_name = NOT_APPLICABLE
 
         for weather_report in self.weather_readings:
             highest_temps.append(weather_report.maximum_temperature)
@@ -108,7 +110,7 @@ class WeatherCalculator:
         """Parses data into a ChartResults object for bonus mixed charts."""
         daily_temps = self._map_to_daily_temperatures(self.weather_readings)
 
-        year_str, month_name = "", "Unknown"
+        year_str, month_name = "", UNKNOWN
 
         first_valid_date = next(
             (reading.date for reading in self.weather_readings if reading.date), None
@@ -141,7 +143,7 @@ class WeatherCalculator:
         extreme_function = max if find_max else min
 
         result_extreme, result_date = extreme_function(
-            current_record, new_record, key=lambda item: item[0]
+            current_record, new_record, key=lambda item: item[DATE_YEAR_INDEX]
         )
 
         return result_extreme, result_date
