@@ -132,9 +132,11 @@ class WeatherCalculator:
     ):
         """Compares and returns the new extreme value and its date."""
         if new_extreme_value is None:
+
             return current_extreme_value, current_record_date
 
         if current_extreme_value is None:
+
             return new_extreme_value, new_extreme_date
 
         current_record = (current_extreme_value, current_record_date)

@@ -80,6 +80,7 @@ class WeatherParser:
         file_pattern = WeatherParserUtility.generate_file_pattern(target_period)
 
         if not file_pattern:
+           
             return []
 
         matching_files = list(self.directory_path.glob(file_pattern))

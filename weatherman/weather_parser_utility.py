@@ -41,6 +41,7 @@ class WeatherParserUtility:
         target_year = date_parts[DATE_YEAR_INDEX]
 
         if len(date_parts) <= DATE_MONTH_INDEX:
+            
             return target_year, None
 
         return target_year, date_parts[DATE_MONTH_INDEX]
@@ -53,6 +54,7 @@ class WeatherParserUtility:
         )
 
         if not target_month:
+            
             return FILE_NAME_FORMAT.format(year=target_year, month="*")
 
         month_abbreviation = WeatherParserUtility._get_month_abbreviation(
@@ -60,6 +62,7 @@ class WeatherParserUtility:
         )
 
         if not month_abbreviation:
+            
             return None
 
         return FILE_NAME_FORMAT.format(year=target_year, month=month_abbreviation)
@@ -73,6 +76,7 @@ class WeatherParserUtility:
             return date(year, month, day)
 
         except (ValueError, IndexError):
+            
             return None
 
     @staticmethod

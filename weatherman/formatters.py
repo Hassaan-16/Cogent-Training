@@ -50,6 +50,7 @@ class FormatterHelper:
     def format_temp_int(temperature_in_degrees):
         """temperature rounding as integers. None values returned as N/A."""
         if temperature_in_degrees is None:
+         
             return NOT_APPLICABLE
 
         return int(round(temperature_in_degrees))
@@ -61,6 +62,7 @@ class FormatterHelper:
         """Return a Formated extreme value or 'N/A' if unavailable"""
 
         if None in [extreme_weather_reading, date_object]:
+         
             return NOT_APPLICABLE
 
         month_name = calendar.month_name[date_object.month]
@@ -132,6 +134,7 @@ class FormatterHelper:
     def get_bonus_chart_lines(daily_temps):
         """Creates formatted string lines for the combined bonus chart."""
         if not daily_temps.dailyTemperature:
+         
             return ["No daily temperatures found to chart."]
 
         bonus_chart_lines = FormatterHelper.create_bonus_chart_lines(daily_temps)
