@@ -56,18 +56,10 @@ def handle_missing_values(weather_value):
     return weather_value if weather_value is not None else DEFAULT_VALUE
 
 
-def validate_date(date_str):
-    """Exclusively parses and validates dates at the boundaries."""
-    parsed_date = None
-    if date_str:
-        try:
-            parts = date_str.replace("/", "-").split("-")
-            parsed_date = date(
-                int(parts[DATE_YEAR_INDEX]),
-                int(parts[DATE_MONTH_INDEX]),
-                int(parts[DATE_DAY_INDEX]),
-            )
-        except (ValueError, IndexError):
-            parsed_date = None
-
-    return parsed_date
+def validate_date(date_str: str | None) -> date | None:
+    """Parse a date string in YYYY-MM-DD or YYYY/MM/DD format."""
+    try:
+        year, month, day = map(int, date_str.replace("/", "-").split("-"))
+        return date(year, month, day)
+    except (ValueError, IndexError):
+        return None

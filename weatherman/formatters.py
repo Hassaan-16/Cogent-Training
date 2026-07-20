@@ -24,19 +24,10 @@ def format_temp_int(temperature_in_degrees):
 
 
 def format_extreme_value(extreme_weather_reading, date_object, unit="C"):
-    """Formats an extreme value string safely handling None and extracting clean date strings."""
+    """Formats an extreme value with weather reading and unit. returns 'N/A' if None"""
     if None not in [extreme_weather_reading, date_object]:
-        if isinstance(date_object, str):
-            clean_date = date_object.replace("/", "-")
-            parts = clean_date.split("-")
-            month_num = int(parts[DATE_MONTH_INDEX])
-            day_num = int(parts[DATE_DAY_INDEX])
-        else:
-            month_num = date_object.month
-            day_num = date_object.day
-
-        month_name = calendar.month_name[month_num]
-        date_str = f"{month_name} {day_num:02d}"
+        month_name = calendar.month_name[date_object.month]
+        date_str = f"{month_name} {date_object.day:02d}"
 
         formatted_temp = format_temp_int(extreme_weather_reading)
         formatted_extreme_value_str = f"{formatted_temp}{unit} on {date_str}"
@@ -54,27 +45,47 @@ def build_color_bar(temperature_in_degrees, ascii_color_code):
     return f"{ascii_color_code}{'+' * temperature_in_degrees}{RESET_ASCII}"
 
 
-def get_monthly_chart_lines(month_name, year_str, highest_temps, lowest_temps):
+def build_combined_color_bar(min_temp_int, max_temp_int):
+    """Calculates and concatenates the dual-color ASCII bar."""
+    blue_bar = build_color_bar(min_temp_int, BLUE_ASCII)
+    red_bar = build_color_bar(max_temp_int - min_temp_int, RED_ASCII)
+
+    return blue_bar.replace(RESET_ASCII, "") + red_bar
+
+
+def format_bonus_chart_row(day_num, combined_bar, min_temp, max_temp):
+    """Handles the strict string layout for a single bonus chart row."""
+
+    return f"{day_num:02d} {combined_bar} {min_temp}C-{max_temp}C"
+
+
+def format_chart_row(day_num, bar, temp):
+    """Returns formatted string lines for the monthly chart report."""
+
+    return f"{day_num:02d} {bar} {temp}C"
+
+
+def format_monthly_chart_lines(month_name, year_str, highest_temps, lowest_temps):
     """Creates formatted string lines for the monthly chart report."""
-    monthly_chart_lines = [f"{month_name} {year_str}"]
+    lines = [f"{month_name} {year_str}"]
 
-    for day_index in range(len(highest_temps)):
-        day_high = highest_temps[day_index]
-        day_low = lowest_temps[day_index]
-
-        if day_high is None or day_low is None:
+    for day_index, (high, low) in enumerate(zip(highest_temps, lowest_temps), start=1):
+        if high is None or low is None:
             continue
 
-        formatted_high = format_temp_int(day_high)
-        formatted_low = format_temp_int(day_low)
+        formatted_high = format_temp_int(high)
+        formatted_low = format_temp_int(low)
 
-        high_temp_bar = build_color_bar(formatted_high, RED_ASCII)
-        low_temp_bar = build_color_bar(formatted_low, BLUE_ASCII)
+        lines.append(
+            format_chart_row(
+                day_index, build_color_bar(formatted_high, RED_ASCII), high
+            )
+        )
+        lines.append(
+            format_chart_row(day_index, build_color_bar(formatted_low, BLUE_ASCII), low)
+        )
 
-        monthly_chart_lines.append(f"{day_index + 1:02d} {high_temp_bar} {day_high}C")
-        monthly_chart_lines.append(f"{day_index + 1:02d} {low_temp_bar} {day_low}C")
-
-    return monthly_chart_lines
+    return lines
 
 
 def get_bonus_chart_lines(daily_temps):
@@ -92,14 +103,13 @@ def get_bonus_chart_lines(daily_temps):
         min_temp = format_temp_int(daily.minimum_temperature)
         max_temp = format_temp_int(daily.maximum_temperature)
 
-        blue_bar = build_color_bar(min_temp, BLUE_ASCII)
-        red_bar = build_color_bar(max_temp - min_temp, RED_ASCII)
+        combined_bar = build_combined_color_bar(min_temp, max_temp)
 
-        combined_bar = blue_bar.replace(RESET_ASCII, "") + red_bar
-
-        bonus_chart_lines.append(
-            f"{day_num:02d} {combined_bar} {min_temp}C-{max_temp}C"
+        formatted_row = format_bonus_chart_row(
+            day_num, combined_bar, min_temp, max_temp
         )
+
+        bonus_chart_lines.append(formatted_row)
 
     return bonus_chart_lines
 
@@ -143,8 +153,8 @@ def get_extreme_values_lines(extreme_metrics):
     ]
 
     extreme_values = [
-        f"{extreme_value_label}: {format_extreme_value(val, date_obj, unit)}"
-        for extreme_value_label, val, date_obj, unit in report_configs
+        f"{extreme_value_label}: {format_extreme_value(extreme_value, date_obj, unit)}"
+        for extreme_value_label, extreme_value, date_obj, unit in report_configs
     ]
 
     return extreme_values

@@ -64,13 +64,18 @@ class WeatherCalculator:
         year_str = ""
         month_name = "N/A"
 
-        for weather_reading in self.weather_readings:
-            highest_temps.append(weather_reading.maximum_temperature)
-            lowest_temps.append(weather_reading.minimum_temperature)
+        for weather_report in self.weather_readings:
+            highest_temps.append(weather_report.maximum_temperature)
+            lowest_temps.append(weather_report.minimum_temperature)
 
         if self.weather_readings and self.weather_readings[DATE_YEAR_INDEX].date:
             first_valid_date = next(
-                (r.date for r in self.weather_readings if r.date), None
+                (
+                    weather_reading.date
+                    for weather_reading in self.weather_readings
+                    if weather_reading.date
+                ),
+                None,
             )
 
             if first_valid_date:
@@ -105,11 +110,13 @@ class WeatherCalculator:
 
         year_str, month_name = "", "Unknown"
 
-        for reading in self.weather_readings:
-            if reading.date:
-                year_str = str(reading.date.year)
-                month_name = calendar.month_name[reading.date.month]
-                break
+        first_valid_date = next(
+            (reading.date for reading in self.weather_readings if reading.date), None
+        )
+
+        if first_valid_date:
+            year_str = str(first_valid_date.year)
+            month_name = calendar.month_name[first_valid_date.month]
 
         return data_models.ChartResults(month_name, year_str, daily_temps)
 
@@ -122,19 +129,20 @@ class WeatherCalculator:
         find_max=True,
     ):
         """Compares and returns the new extreme value and its date."""
-        result_extreme = current_extreme_value
-        result_date = current_record_date
+        if new_extreme_value is None:
+            return current_extreme_value, current_record_date
 
-        if new_extreme_value is not None:
-            is_new_record = current_extreme_value is None or (
-                (new_extreme_value > current_extreme_value)
-                if find_max
-                else (new_extreme_value < current_extreme_value)
-            )
+        if current_extreme_value is None:
+            return new_extreme_value, new_extreme_date
 
-            if is_new_record:
-                result_extreme = new_extreme_value
-                result_date = new_extreme_date
+        current_record = (current_extreme_value, current_record_date)
+        new_record = (new_extreme_value, new_extreme_date)
+
+        extreme_function = max if find_max else min
+
+        result_extreme, result_date = extreme_function(
+            current_record, new_record, key=lambda item: item[0]
+        )
 
         return result_extreme, result_date
 
