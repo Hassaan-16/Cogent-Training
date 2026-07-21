@@ -102,27 +102,27 @@ class FormatterHelper:
         """Creates formatted string lines for the monthly chart report."""
         lines = [f"{month_name} {year_str}"]
 
-        for day_index, (high, low) in enumerate(
+        for day_index, (high_temp, low_temp) in enumerate(
             zip(highest_temps, lowest_temps), start=1
         ):
-            if high is None or low is None:
+            if high_temp is None or low_temp is None:
                 continue
 
-            formatted_high = FormatterHelper.format_temp_int(high)
-            formatted_low = FormatterHelper.format_temp_int(low)
+            formatted_high = FormatterHelper.format_temp_int(high_temp)
+            formatted_low = FormatterHelper.format_temp_int(low_temp)
 
             lines.append(
                 FormatterHelper.format_chart_row(
                     day_index,
                     FormatterHelper.build_color_bar(formatted_high, RED_ASCII),
-                    high,
+                    high_temp,
                 )
             )
             lines.append(
                 FormatterHelper.format_chart_row(
                     day_index,
                     FormatterHelper.build_color_bar(formatted_low, BLUE_ASCII),
-                    low,
+                    low_temp,
                 )
             )
 

@@ -28,7 +28,6 @@ class WeatherParser:
                 weather_file_readings = csv.DictReader(weather_file)
 
                 for file_reading_dictionary in weather_file_readings:
-                    # Bug fix: Ensure the dictionary is actually appended to the list
                     raw_weather_dictionaries.append(file_reading_dictionary)
 
         except OSError as error:
@@ -75,19 +74,23 @@ class WeatherParser:
         raw_weather_dictionaries = self._extract_raw_dictionaries(filepath)
 
         return self.store_weather_readings(raw_weather_dictionaries)
-    
-    def parse_period(self, target_period):
-        """Schedules file parsing by locating files that match requested period."""
-        all_weather_readings = []
+
+    def _locate_matching_files(self, target_period):
+        """Locates and returns a list of file paths matching the given period."""
         file_pattern = WeatherParserUtility.generate_file_pattern(target_period)
 
         if not file_pattern:
             return []
 
-        matching_files = list(self.directory_path.glob(file_pattern))
+        return list(self.directory_path.glob(file_pattern))
 
+    def parse_period(self, target_period):
+        """Coordinations file parsing for a specific requested period."""
+        all_weather_readings = []
+        matching_files = self._locate_matching_files(target_period)
+        
         if not matching_files:
-            print(f"No data files found matching pattern: {file_pattern}")
+            print(f"No data files found matching pattern: {filepath}")
         else:
             for filepath in matching_files:
                 all_weather_readings.extend(self._parse_file(filepath))

@@ -61,7 +61,7 @@ class WeatherCalculator:
         )
 
     def build_monthly_report(self):
-        """gets the monthly min and max temperature data"""
+        """gets the monthly min and max temperature data along with month if provided"""
         highest_temps = []
         lowest_temps = []
         year_str = ""

@@ -92,7 +92,7 @@ class WeatherParserUtility:
 
     @staticmethod
     def _map_to_daily_temperatures(weather_readings):
-        """maps DailyTemperature day, max and min temperatures to data model"""
+        """maps individual day, max and min temperatures to data model"""
         daily_temps = []
 
         for weather_reading in weather_readings:

@@ -9,7 +9,7 @@ class ReportGenerator:
         self.calculator = calculator
 
     def generate_average_monthly_report(self):
-        """Generates the average monthly report."""
+        """Generates the average monthly report"""
         average_metrics = self.calculator.calculate_average_monthly_report()
 
         return FormatterHelper.get_average_monthly_lines(average_metrics)
