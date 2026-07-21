@@ -1,5 +1,6 @@
 from calendar import month_abbr
 from datetime import date
+import data_models
 
 from constants import (
     DATE_MONTH_INDEX,
@@ -41,7 +42,6 @@ class WeatherParserUtility:
         target_year = date_parts[DATE_YEAR_INDEX]
 
         if len(date_parts) <= DATE_MONTH_INDEX:
-            
             return target_year, None
 
         return target_year, date_parts[DATE_MONTH_INDEX]
@@ -54,7 +54,6 @@ class WeatherParserUtility:
         )
 
         if not target_month:
-            
             return FILE_NAME_FORMAT.format(year=target_year, month="*")
 
         month_abbreviation = WeatherParserUtility._get_month_abbreviation(
@@ -62,7 +61,6 @@ class WeatherParserUtility:
         )
 
         if not month_abbreviation:
-            
             return None
 
         return FILE_NAME_FORMAT.format(year=target_year, month=month_abbreviation)
@@ -76,7 +74,6 @@ class WeatherParserUtility:
             return date(year, month, day)
 
         except (ValueError, IndexError):
-            
             return None
 
     @staticmethod
@@ -92,3 +89,23 @@ class WeatherParserUtility:
         """safely handle any missing daily data values."""
 
         return weather_value if weather_value is not None else DEFAULT_VALUE
+
+    @staticmethod
+    def _map_to_daily_temperatures(weather_readings):
+        """maps DailyTemperature day, max and min temperatures to data model"""
+        daily_temps = []
+
+        for weather_reading in weather_readings:
+            if not weather_reading or weather_reading.date is None:
+                continue
+
+            day_int = weather_reading.date.day
+            daily_temps.append(
+                data_models.DailyTemperature(
+                    day_int,
+                    weather_reading.maximum_temperature,
+                    weather_reading.minimum_temperature,
+                )
+            )
+
+        return daily_temps

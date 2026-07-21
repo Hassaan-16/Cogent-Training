@@ -18,50 +18,52 @@ class WeatherParser:
     def __init__(self, directory_path):
         self.directory_path = Path(directory_path)
 
-    def _extract_raw_rows(self, filename):
-        """Reads a CSV file using DictReader and returns the valid raw rows."""
-        raw_weather_rows = []
+    def _extract_raw_dictionaries(self, filename):
+        """Reads a CSV file using DictReader and returns the raw dictionaries."""
+        raw_weather_dictionaries = []
         file_path_object = Path(filename)
 
         try:
             with file_path_object.open("r", encoding="utf-8") as weather_file:
                 weather_file_readings = csv.DictReader(weather_file)
 
-                for file_reading in weather_file_readings:
-                    if (
-                        file_reading.get(COLUMN_KEY_DATE)
-                        and file_reading.get(COLUMN_KEY_DATE).strip()
-                    ):
-                        raw_weather_rows.append(file_reading)
+                for file_reading_dictionary in weather_file_readings:
+                    # Bug fix: Ensure the dictionary is actually appended to the list
+                    raw_weather_dictionaries.append(file_reading_dictionary)
 
         except OSError as error:
             print(f"Error reading file: {filename}\nException: {error}")
 
-        return raw_weather_rows
+        return raw_weather_dictionaries
 
-    def store_weather_readings(self, raw_weather_rows):
-        """Converts raw CSV dict rows into cleanly validated WeatherReading objects."""
+    def store_weather_readings(self, raw_weather_dictionaries):
+        """Converts raw CSV dictionaries into cleanly validated WeatherReading objects."""
         parsed_readings = []
 
-        for weather_readings in raw_weather_rows:
-            date_value = WeatherParserUtility.validate_date(
-                weather_readings.get(COLUMN_KEY_DATE, "").strip()
+        for weather_dictionary in raw_weather_dictionaries:
+            raw_date_string = weather_dictionary.get(COLUMN_KEY_DATE)
+
+            if not raw_date_string or not raw_date_string.strip():
+                continue
+
+            parsed_date_object = WeatherParserUtility.validate_date(
+                raw_date_string.strip()
             )
 
-            if date_value:
+            if parsed_date_object:
                 weather_reading = data_models.WeatherReading(
-                    date=date_value,
+                    date=parsed_date_object,
                     maximum_temperature=WeatherParserUtility.convert_to_float(
-                        weather_readings.get(COLUMN_KEY_MAX_TEMP)
+                        weather_dictionary.get(COLUMN_KEY_MAX_TEMP)
                     ),
                     minimum_temperature=WeatherParserUtility.convert_to_float(
-                        weather_readings.get(COLUMN_KEY_MIN_TEMP)
+                        weather_dictionary.get(COLUMN_KEY_MIN_TEMP)
                     ),
                     maximum_humidity=WeatherParserUtility.convert_to_float(
-                        weather_readings.get(COLUMN_KEY_MAX_HUMIDITY)
+                        weather_dictionary.get(COLUMN_KEY_MAX_HUMIDITY)
                     ),
                     mean_humidity=WeatherParserUtility.convert_to_float(
-                        weather_readings.get(COLUMN_KEY_MEAN_HUMIDITY)
+                        weather_dictionary.get(COLUMN_KEY_MEAN_HUMIDITY)
                     ),
                 )
                 parsed_readings.append(weather_reading)
@@ -70,17 +72,16 @@ class WeatherParser:
 
     def _parse_file(self, filepath):
         """Coordinates parsing a single weather file into WeatherReading objects."""
-        raw_weather_rows = self._extract_raw_rows(filepath)
+        raw_weather_dictionaries = self._extract_raw_dictionaries(filepath)
 
-        return self.store_weather_readings(raw_weather_rows)
-
+        return self.store_weather_readings(raw_weather_dictionaries)
+    
     def parse_period(self, target_period):
         """Schedules file parsing by locating files that match requested period."""
         all_weather_readings = []
         file_pattern = WeatherParserUtility.generate_file_pattern(target_period)
 
         if not file_pattern:
-           
             return []
 
         matching_files = list(self.directory_path.glob(file_pattern))

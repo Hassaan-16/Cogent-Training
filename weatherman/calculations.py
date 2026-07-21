@@ -1,6 +1,7 @@
 import calendar
-
 import data_models
+
+from weather_parser_utility import WeatherParserUtility
 from constants import (
     DATE_YEAR_INDEX,
     DEFAULT_VALUE,
@@ -10,6 +11,7 @@ from constants import (
     MIN_TEMP,
     NOT_APPLICABLE,
     UNKNOWN,
+    WEATHER_ATTRIBUTES,
 )
 
 
@@ -40,11 +42,10 @@ class WeatherCalculator:
 
     def calculate_average_monthly_report(self):
         """calculate average monthly max/min temperature and mean humidity."""
-        weather_attributes = [MAX_TEMP, MIN_TEMP, MEAN_HUMIDITY]
 
         extracted_weather_attributes = {
             attribute_name: self._extract_required_attribute(attribute_name)
-            for attribute_name in weather_attributes
+            for attribute_name in WEATHER_ATTRIBUTES
         }
 
         return data_models.AverageResults(
@@ -59,7 +60,7 @@ class WeatherCalculator:
             ),
         )
 
-    def calculate_monthly_report(self):
+    def build_monthly_report(self):
         """gets the monthly min and max temperature data"""
         highest_temps = []
         lowest_temps = []
@@ -86,29 +87,11 @@ class WeatherCalculator:
 
         return month_name, year_str, highest_temps, lowest_temps
 
-    @staticmethod
-    def _map_to_daily_temperatures(weather_readings):
-        """maps DailyTemperature day, max and min temperatures to data model"""
-        daily_temps = []
-
-        for weather_reading in weather_readings:
-            if not weather_reading or weather_reading.date is None:
-                continue
-
-            day_int = weather_reading.date.day
-            daily_temps.append(
-                data_models.DailyTemperature(
-                    day_int,
-                    weather_reading.maximum_temperature,
-                    weather_reading.minimum_temperature,
-                )
-            )
-
-        return daily_temps
-
     def calculate_chart_data(self):
         """Parses data into a ChartResults object for bonus mixed charts."""
-        daily_temps = self._map_to_daily_temperatures(self.weather_readings)
+        daily_temps = WeatherParserUtility._map_to_daily_temperatures(
+            self.weather_readings
+        )
 
         year_str, month_name = "", UNKNOWN
 
@@ -132,11 +115,9 @@ class WeatherCalculator:
     ):
         """Compares and returns the new extreme value and its date."""
         if new_extreme_value is None:
-
             return current_extreme_value, current_record_date
 
         if current_extreme_value is None:
-
             return new_extreme_value, new_extreme_date
 
         current_record = (current_extreme_value, current_record_date)

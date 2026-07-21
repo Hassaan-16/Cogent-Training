@@ -9,45 +9,37 @@ class ReportGenerator:
         self.calculator = calculator
 
     def generate_average_monthly_report(self):
-        """Generates and prints the average monthly report."""
+        """Generates the average monthly report."""
         average_metrics = self.calculator.calculate_average_monthly_report()
-        formatted_average_monthly_lines = FormatterHelper.get_average_monthly_lines(
-            average_metrics
-        )
 
-        for average_report_values in formatted_average_monthly_lines:
-            print(average_report_values)
+        return FormatterHelper.get_average_monthly_lines(average_metrics)
 
     def generate_monthly_charts(self):
-        """Displays horizontal bar charts for monthly data."""
+        """Generates the horizontal bar charts for monthly data."""
         month_name, year_str, highest_temp, lowest_temp = (
-            self.calculator.calculate_monthly_report()
+            self.calculator.build_monthly_report()
         )
 
-        formatted_monthly_chart_lines = FormatterHelper.get_monthly_chart_lines(
+        return FormatterHelper.get_monthly_chart_lines(
             month_name, year_str, highest_temp, lowest_temp
         )
 
-        for monthly_chart_line in formatted_monthly_chart_lines:
-            print(monthly_chart_line)
-
     def generate_bonus_charts(self):
-        """Displays one combined daily chart."""
+        """Generates one combined daily chart."""
         daily_temps = self.calculator.calculate_chart_data()
-        formatted_bonus_chart_lines = FormatterHelper.get_bonus_chart_lines(daily_temps)
 
-        for bonus_chart_line in formatted_bonus_chart_lines:
-            print(bonus_chart_line)
+        return FormatterHelper.get_bonus_chart_lines(daily_temps)
 
     def generate_extreme_values_report(self):
-        """Generates and prints the extreme values report."""
+        """Generates the extreme values report."""
         extreme_metrics = self.calculator.calculate_extreme_values()
-        formatted_extreme_values_lines = FormatterHelper.get_extreme_values_lines(
-            extreme_metrics
-        )
 
-        for extreme_values in formatted_extreme_values_lines:
-            print(extreme_values)
+        return FormatterHelper.get_extreme_values_lines(extreme_metrics)
+
+    def _print_report_lines(self, formatted_report_lines):
+        """Displays formatted lines for any generated report."""
+        for formatted_line in formatted_report_lines:
+            print(formatted_line)
 
     def execute_report(self, report_type):
         """Selects and executes the appropriate report generation based on the mode."""
@@ -59,7 +51,8 @@ class ReportGenerator:
         }
 
         if report_type in dispatch:
-            dispatch[report_type]()
+            formatted_lines = dispatch[report_type]()
+            self._print_report_lines(formatted_lines)
             print("")
         else:
             print(

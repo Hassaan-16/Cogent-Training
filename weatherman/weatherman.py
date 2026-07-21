@@ -34,7 +34,6 @@ def main():
         (FLAG_EXTREME, DEST_EXTREME, HELP_EXTREME),
     ]
 
-    # Re-added the loop to register the arguments
     for command_line_flag, report_type, help_text in report_configs:
         parser.add_argument(
             command_line_flag, dest=report_type, help=help_text, action="append"

@@ -56,3 +56,5 @@ HELP_AVERAGE = "year/month for average values report"
 HELP_BONUS = "Year/Month for the bonus chart"
 HELP_CHART = "year/month chart values report"
 HELP_EXTREME = "Year for extreme values report"
+
+WEATHER_ATTRIBUTES = [MAX_TEMP, MIN_TEMP, MEAN_HUMIDITY]
