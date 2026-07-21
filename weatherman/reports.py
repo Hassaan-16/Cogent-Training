@@ -53,10 +53,4 @@ class ReportGenerator:
         if report_type in dispatch:
             formatted_lines = dispatch[report_type]()
             self._print_report_lines(formatted_lines)
-            print("")
-        else:
-            print(
-                f"Invalid mode. Please use {FLAG_AVERAGE, FLAG_BONUS, FLAG_CHART} or {
-                    FLAG_EXTREME
-                }"
-            )
+            print("")    

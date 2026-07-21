@@ -49,4 +49,4 @@ class ChartResults:
 
     month_name: str
     year: str
-    dailyTemperature: list[DailyTemperature]
+    daily_temperature: list[DailyTemperature]

@@ -88,7 +88,7 @@ class WeatherParser:
         """Coordinations file parsing for a specific requested period."""
         all_weather_readings = []
         matching_files = self._locate_matching_files(target_period)
-        
+
         if not matching_files:
             print(f"No data files found matching pattern: {filepath}")
         else:

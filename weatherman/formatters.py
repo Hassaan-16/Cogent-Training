@@ -19,12 +19,12 @@ class FormatterHelper:
     """Helper class containing static methods for formatting report outputs."""
 
     @staticmethod
-    def _is_valid_daily_temperature(daily):
+    def _is_valid_daily_temperature(daily_measurement):
         """Validates if a daily temperature reading has complete data."""
 
         return (
-            daily.maximum_temperature is not None
-            and daily.minimum_temperature is not None
+            daily_measurement.maximum_temperature is not None
+            and daily_measurement.minimum_temperature is not None
         )
 
     @staticmethod
@@ -34,11 +34,11 @@ class FormatterHelper:
         return f"{month_name} {year}"
 
     @staticmethod
-    def _process_daily_bonus_row(daily):
+    def _process_daily_bonus_row(daily_measurement):
         """Orchestrates data extraction, formatting, and building for a single row."""
-        day_num = daily.day
-        min_temp = FormatterHelper.format_temp_int(daily.minimum_temperature)
-        max_temp = FormatterHelper.format_temp_int(daily.maximum_temperature)
+        day_num = daily_measurement.day
+        min_temp = FormatterHelper.format_temp_int(daily_measurement.minimum_temperature)
+        max_temp = FormatterHelper.format_temp_int(daily_measurement.maximum_temperature)
 
         combined_bar = FormatterHelper.build_combined_color_bar(min_temp, max_temp)
 
@@ -56,7 +56,7 @@ class FormatterHelper:
 
     @staticmethod
     def format_extreme_value(
-        extreme_weather_reading: int | None, date_object: date | None, unit: str = "C"
+        extreme_weather_reading: int | None, date_object: date | None, unit: str = UNIT_CELSIUS
     ) -> str:
         """Return a Formated extreme value or 'N/A' if unavailable"""
 
@@ -131,7 +131,7 @@ class FormatterHelper:
     @staticmethod
     def get_bonus_chart_lines(daily_temps):
         """Creates formatted string lines for the combined bonus chart."""
-        if not daily_temps.dailyTemperature:
+        if not daily_temps.daily_temperature:
             return ["No daily temperatures found to chart."]
 
         bonus_chart_lines = FormatterHelper.create_bonus_chart_lines(daily_temps)
@@ -146,7 +146,7 @@ class FormatterHelper:
             )
         ]
 
-        for daily in daily_temps.dailyTemperature:
+        for daily in daily_temps.daily_temperature:
             if not FormatterHelper._is_valid_daily_temperature(daily):
                 continue
 
