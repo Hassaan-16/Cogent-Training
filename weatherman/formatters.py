@@ -19,15 +19,6 @@ class FormatterHelper:
     """Helper class containing static methods for formatting report outputs."""
 
     @staticmethod
-    def _is_valid_daily_temperature(daily_measurement):
-        """Validates if a daily temperature reading has complete data."""
-
-        return (
-            daily_measurement.maximum_temperature is not None
-            and daily_measurement.minimum_temperature is not None
-        )
-
-    @staticmethod
     def _format_chart_header(month_name, year):
         """Formats the header line for a chart."""
 
@@ -111,9 +102,6 @@ class FormatterHelper:
         for day_index, (high_temp, low_temp) in enumerate(
             zip(highest_temps, lowest_temps), start=1
         ):
-            if high_temp is None or low_temp is None:
-                continue
-
             formatted_high = FormatterHelper.format_temp_int(high_temp)
             formatted_low = FormatterHelper.format_temp_int(low_temp)
 
@@ -154,9 +142,6 @@ class FormatterHelper:
         ]
 
         for daily in daily_temps.daily_temperature:
-            if not FormatterHelper._is_valid_daily_temperature(daily):
-                continue
-
             formatted_row = FormatterHelper._process_daily_bonus_row(daily)
             bonus_chart_lines.append(formatted_row)
 

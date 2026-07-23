@@ -36,6 +36,12 @@ class ReportBuilder:
             if not weather_reading or weather_reading.date is None:
                 continue
 
+            if (
+                weather_reading.maximum_temperature is None
+                or weather_reading.minimum_temperature is None
+            ):
+                continue
+
             day_integer = weather_reading.date.day
             daily_temperatures_list.append(
                 data_models.DailyTemperature(
