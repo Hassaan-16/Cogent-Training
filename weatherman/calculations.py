@@ -1,7 +1,4 @@
-import calendar
 import data_models
-
-from weather_parser_utility import WeatherParserUtility
 from constants import (
     DATE_YEAR_INDEX,
     DEFAULT_VALUE,
@@ -9,8 +6,6 @@ from constants import (
     MAX_TEMP,
     MEAN_HUMIDITY,
     MIN_TEMP,
-    NOT_APPLICABLE,
-    UNKNOWN,
     WEATHER_ATTRIBUTES,
 )
 
@@ -30,15 +25,6 @@ class WeatherCalculator:
             if weather_reading_value
             else DEFAULT_VALUE
         )
-
-    def _extract_required_attribute(self, attribute_name):
-        """Extracts the required attributes from the internal readings."""
-
-        return [
-            getattr(weather_reading, attribute_name)
-            for weather_reading in self.weather_readings
-            if getattr(weather_reading, attribute_name) is not None
-        ]
 
     def calculate_average_monthly_report(self):
         """calculate average monthly max/min temperature and mean humidity."""
@@ -60,50 +46,14 @@ class WeatherCalculator:
             ),
         )
 
-    def build_monthly_report(self):
-        """gets the monthly min and max temperature data along with month if provided"""
-        highest_temps = []
-        lowest_temps = []
-        year_str = ""
-        month_name = NOT_APPLICABLE
+    def _extract_required_attribute(self, attribute_name):
+        """Extracts the required attributes from the internal readings."""
 
-        for weather_report in self.weather_readings:
-            highest_temps.append(weather_report.maximum_temperature)
-            lowest_temps.append(weather_report.minimum_temperature)
-
-        if self.weather_readings and self.weather_readings[DATE_YEAR_INDEX].date:
-            first_valid_date = next(
-                (
-                    weather_reading.date
-                    for weather_reading in self.weather_readings
-                    if weather_reading.date
-                ),
-                None,
-            )
-
-            if first_valid_date:
-                year_str = str(first_valid_date.year)
-                month_name = calendar.month_name[first_valid_date.month]
-
-        return month_name, year_str, highest_temps, lowest_temps
-
-    def calculate_chart_data(self):
-        """Parses data into a ChartResults object for bonus mixed charts."""
-        daily_temps = WeatherParserUtility._map_to_daily_temperatures(
-            self.weather_readings
-        )
-
-        year_str, month_name = "", UNKNOWN
-
-        first_valid_date = next(
-            (reading.date for reading in self.weather_readings if reading.date), None
-        )
-
-        if first_valid_date:
-            year_str = str(first_valid_date.year)
-            month_name = calendar.month_name[first_valid_date.month]
-
-        return data_models.ChartResults(month_name, year_str, daily_temps)
+        return [
+            getattr(weather_reading, attribute_name)
+            for weather_reading in self.weather_readings
+            if getattr(weather_reading, attribute_name) is not None
+        ]
 
     @staticmethod
     def _evaluate_extreme(
@@ -114,6 +64,7 @@ class WeatherCalculator:
         find_max=True,
     ):
         """Compares and returns the new extreme value and its date."""
+
         if new_extreme_value is None:
             return current_extreme_value, current_record_date
 

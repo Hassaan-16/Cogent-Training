@@ -1,5 +1,6 @@
-from formatters import FormatterHelper
+from report_builder import ReportBuilder
 from constants import FLAG_AVERAGE, FLAG_BONUS, FLAG_CHART, FLAG_EXTREME
+from formatters import FormatterHelper
 
 
 class ReportGenerator:
@@ -7,6 +8,7 @@ class ReportGenerator:
 
     def __init__(self, calculator):
         self.calculator = calculator
+        self.builder = ReportBuilder(self.calculator.weather_readings)
 
     def generate_average_monthly_report(self):
         """Generates the average monthly report"""
@@ -17,7 +19,7 @@ class ReportGenerator:
     def generate_monthly_charts(self):
         """Generates the horizontal bar charts for monthly data."""
         month_name, year_str, highest_temp, lowest_temp = (
-            self.calculator.build_monthly_report()
+            self.builder.build_monthly_report()
         )
 
         return FormatterHelper.get_monthly_chart_lines(
@@ -26,7 +28,7 @@ class ReportGenerator:
 
     def generate_bonus_charts(self):
         """Generates one combined daily chart."""
-        daily_temps = self.calculator.calculate_chart_data()
+        daily_temps = self.builder.build_chart_measurements()
 
         return FormatterHelper.get_bonus_chart_lines(daily_temps)
 
@@ -53,4 +55,4 @@ class ReportGenerator:
         if report_type in dispatch:
             formatted_lines = dispatch[report_type]()
             self._print_report_lines(formatted_lines)
-            print("")    
+            print("")

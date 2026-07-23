@@ -37,8 +37,12 @@ class FormatterHelper:
     def _process_daily_bonus_row(daily_measurement):
         """Orchestrates data extraction, formatting, and building for a single row."""
         day_num = daily_measurement.day
-        min_temp = FormatterHelper.format_temp_int(daily_measurement.minimum_temperature)
-        max_temp = FormatterHelper.format_temp_int(daily_measurement.maximum_temperature)
+        min_temp = FormatterHelper.format_temp_int(
+            daily_measurement.minimum_temperature
+        )
+        max_temp = FormatterHelper.format_temp_int(
+            daily_measurement.maximum_temperature
+        )
 
         combined_bar = FormatterHelper.build_combined_color_bar(min_temp, max_temp)
 
@@ -56,7 +60,9 @@ class FormatterHelper:
 
     @staticmethod
     def format_extreme_value(
-        extreme_weather_reading: int | None, date_object: date | None, unit: str = UNIT_CELSIUS
+        extreme_weather_reading: int | None,
+        date_object: date | None,
+        unit: str = UNIT_CELSIUS,
     ) -> str:
         """Return a Formated extreme value or 'N/A' if unavailable"""
 
@@ -130,7 +136,7 @@ class FormatterHelper:
 
     @staticmethod
     def get_bonus_chart_lines(daily_temps):
-        """Creates formatted string lines for the combined bonus chart."""
+        """return formatted string lines for the combined bonus chart."""
         if not daily_temps.daily_temperature:
             return ["No daily temperatures found to chart."]
 
@@ -140,6 +146,7 @@ class FormatterHelper:
 
     @staticmethod
     def create_bonus_chart_lines(daily_temps):
+        """Creates complete chart lines for the combined bonus chart."""
         bonus_chart_lines = [
             FormatterHelper._format_chart_header(
                 daily_temps.month_name, daily_temps.year
