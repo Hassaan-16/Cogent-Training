@@ -1,4 +1,3 @@
-import data_models
 from constants import (
     DATE_YEAR_INDEX,
     DEFAULT_VALUE,
@@ -8,6 +7,7 @@ from constants import (
     MIN_TEMP,
     WEATHER_ATTRIBUTES,
 )
+import data_models
 
 
 class WeatherCalculator:

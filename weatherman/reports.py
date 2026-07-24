@@ -1,6 +1,11 @@
-from report_builder import ReportBuilder
-from constants import FLAG_AVERAGE, FLAG_BONUS, FLAG_CHART, FLAG_EXTREME
+from constants import (
+    FLAG_AVERAGE,
+    FLAG_BONUS,
+    FLAG_CHART,
+    FLAG_EXTREME,
+)
 from formatters import FormatterHelper
+from report_builder import ReportBuilder
 
 
 class ReportGenerator:

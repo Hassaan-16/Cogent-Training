@@ -1,7 +1,6 @@
 import csv
 from pathlib import Path
 
-import data_models
 from constants import (
     COLUMN_KEY_DATE,
     COLUMN_KEY_MAX_HUMIDITY,
@@ -9,6 +8,7 @@ from constants import (
     COLUMN_KEY_MEAN_HUMIDITY,
     COLUMN_KEY_MIN_TEMP,
 )
+import data_models
 from file_pattern_generator import generate_file_pattern
 from reading_sanitizer import ReadingSanitizer
 

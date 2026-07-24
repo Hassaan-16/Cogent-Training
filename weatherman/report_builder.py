@@ -1,7 +1,7 @@
 import calendar
-import data_models
 
 from constants import NOT_APPLICABLE, UNKNOWN
+import data_models
 
 
 class ReportBuilder:
