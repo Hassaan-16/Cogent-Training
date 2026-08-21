@@ -1,0 +1,7 @@
+weatherfiles/
+"Day 1 Training"/*
+__pycache__/
+weathermaninfo.txt
+Murree_weather_2004_Aug.csv
+.pre-commit-config.yaml
+.gitignore
